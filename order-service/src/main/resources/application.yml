@@ -1,2 +1,9 @@
 server:
   port: 3000
+
+spring:
+
+  data:
+    mongodb:
+      database: admin
+      uri: ${MONGO_DB_URI:mongodb://admin:admin@localhost:27017}
