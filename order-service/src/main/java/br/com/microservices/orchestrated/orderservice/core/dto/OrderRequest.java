@@ -12,5 +12,5 @@ import java.util.List;
 @AllArgsConstructor
 public class OrderRequest {
 
-    private List<OrderProducts> items;
+    private List<OrderProducts> products;
 }
