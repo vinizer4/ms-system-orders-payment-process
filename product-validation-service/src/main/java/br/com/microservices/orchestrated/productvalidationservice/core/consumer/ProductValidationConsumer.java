@@ -1,5 +1,6 @@
 package br.com.microservices.orchestrated.productvalidationservice.core.consumer;
 
+import br.com.microservices.orchestrated.productvalidationservice.core.service.ProductValidationService;
 import br.com.microservices.orchestrated.productvalidationservice.core.utils.JsonUtil;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 public class ProductValidationConsumer {
 
+    private final ProductValidationService productValidationService;
     private final JsonUtil jsonUtil;
 
     @KafkaListener(
@@ -22,7 +24,7 @@ public class ProductValidationConsumer {
 
         var event = jsonUtil.toEvent(payload);
 
-        log.info(event.toString());
+        productValidationService.validateExistingProduct(event);
     }
 
     @KafkaListener(
@@ -34,6 +36,6 @@ public class ProductValidationConsumer {
 
         var event = jsonUtil.toEvent(payload);
 
-        log.info(event.toString());
+        productValidationService.rollbackEvent(event);
     }
 }
