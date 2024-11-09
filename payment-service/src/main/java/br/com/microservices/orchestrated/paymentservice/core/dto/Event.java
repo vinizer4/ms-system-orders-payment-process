@@ -6,7 +6,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import static org.springframework.util.ObjectUtils.isEmpty;
 
 @Data
 @NoArgsConstructor
@@ -27,4 +30,11 @@ public class Event {
     private SagaStatus status;
     
     private List<History> eventHistory;
+
+    public void addHistory(History history) {
+        if (isEmpty(eventHistory)) {
+            eventHistory = new ArrayList<>();
+        }
+        eventHistory.add(history);
+    }
 }
