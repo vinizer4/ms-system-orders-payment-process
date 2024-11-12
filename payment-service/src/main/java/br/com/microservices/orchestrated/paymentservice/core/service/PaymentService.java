@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 
-import static br.com.microservices.orchestrated.paymentservice.core.enums.SagaStatus.SUCCESS;
+import static br.com.microservices.orchestrated.paymentservice.core.enums.SagaStatus.*;
 
 @Slf4j
 @AllArgsConstructor
@@ -30,7 +30,7 @@ public class PaymentService {
     private final JsonUtil jsonUtil;
     private final KafkaProducer producer;
 
-    private void realizePayment(Event event) {
+    public void realizePayment(Event event) {
         try {
             checkCurrentValidation(event);
             createPendingPayment(event);
@@ -40,6 +40,7 @@ public class PaymentService {
             handleSuccess(event);
         } catch (Exception ex) {
             log.error("Error trying to make payment", ex);
+            handleFailCurrentNotExecuted(event, ex.getMessage());
         }
         producer.sendEvent(jsonUtil.toJson(event));
     }
@@ -125,5 +126,26 @@ public class PaymentService {
 
     private void save(Payment payment) {
         paymentRepository.save(payment);
+    }
+
+    private void handleFailCurrentNotExecuted(Event event, String message) {
+        event.setStatus(ROLLBACK_PENDING);
+        event.setSource(CURRENT_SOURCE);
+        addHistory(event, "Fail to realize payment: ".concat(message));
+    }
+
+    public void realizeRefund(Event event) {
+        changePaymentStatusToRefund(event);
+        event.setStatus(FAIL);
+        event.setSource(CURRENT_SOURCE);
+        addHistory(event, "Rollback executed for payment!");
+        producer.sendEvent(jsonUtil.toJson(event));
+    }
+
+    private void changePaymentStatusToRefund(Event event) {
+        var payment = findByOrderIdAndTransactionId(event);
+        payment.setStatus(PaymentStatus.REFUND);
+        setEventAmountItems(event, payment);
+        save(payment);
     }
 }
