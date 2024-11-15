@@ -105,7 +105,7 @@ public class InventoryService {
     private void addHistory(Event event, String message) {
         var history = History
                 .builder()
-                .source(CURRENT_SOURCE)
+                .source(event.getSource())
                 .status(event.getStatus())
                 .message(message)
                 .createdAt(LocalDateTime.now())
